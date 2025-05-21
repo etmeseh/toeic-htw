@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOEIC</title>
+  <style>
+    :root {
+      --bg: #f9f9f9;
+      --card-bg: #fff;
+      --accent: #005f73;
+      --text: #333;
+      --radius: 8px;
+      --spacing: 1rem;
+      font-size: 16px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Arial, sans-serif; }
+    header { padding: var(--spacing); background: var(--accent); color: #fff; text-align: center; }
+    .container { display: flex; height: calc(100vh - 60px); }
+    nav { width: 300px; overflow-y: auto; background: var(--card-bg); padding: var(--spacing); border-right: 1px solid #ddd; }
+    main { flex: 1; position: relative; }
+    iframe { width: 100%; height: 100%; border: none; }
+    /* Floating audio panel */
+    #audio-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--card-bg);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border-radius: var(--radius);
+      padding: 0.5rem;
+      display: flex;
+      align-items: center;
+      z-index: 1000;
+    }
+    #audio-panel.hidden { display: none; }
+    #audio-panel button {
+      background: none;
+      border: none;
+      margin: 0 0.25rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
+    details { margin-bottom: var(--spacing); }
+    summary { font-weight: bold; cursor: pointer; padding: 0.5rem; border-radius: var(--radius); background: var(--bg); }
+    ul { list-style: none; padding: 0; }
+    li { margin-bottom: 0.5rem; cursor: pointer; }
+    li:hover { text-decoration: underline; }
+    input[type="search"] { width: 100%; padding: 0.5rem; margin-bottom: var(--spacing); border: 1px solid #ccc; border-radius: var(--radius); }
+    @media (max-width: 768px) {
+      .container { flex-direction: column; }
+      nav { width: 100%; height: 40vh; border-right: none; border-bottom: 1px solid #ddd; }
+      main { height: 60vh; }
+      #audio-panel { bottom: auto; top: 10px; right: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TOEIC</h1>
+  </header>
+  <div class="container">
+    <nav>
+      <input type="search" id="search" placeholder="search: unit, title...">
+      <details open>
+        <summary>Audio Files</summary>
+        <ul id="audio-list"></ul>
+      </details>
+      <details open>
+        <summary>Listenin Exercises (PDF)</summary>
+        <ul id="pdf-listening"></ul>
+      </details>
+      <details open>
+        <summary>🔑 Answer Keys (PDF)</summary>
+        <ul id="answer-keys"></ul>
+      </details>
+    </nav>
+    <main>
+      <iframe id="preview" src="about:blank"></iframe>
+    </main>
+  </div>
+
+  <!-- Floating audio controls -->
+  <div id="audio-panel" class="hidden">
+    <button id="btn-prev" title="Önceki">⏮️</button>
+    <button id="btn-play" title="Başlat/Durdur">▶️/⏸️</button>
+    <button id="btn-next" title="Sonraki">⏭️</button>
+    <span id="current-track" style="margin-left:.5rem; font-size:.9rem; flex:1;"></span>
+  </div>
+
+  <script>
+    const audioFiles = [
+      "1-02 Unit 1_ Test Tactic Follow Up P10.mp3",
+      "1-03 Unit 1_ 3 Tactic Practice P10.mp3",
+      "1-04 Unit 1_ Understanding Natural English P10.mp3",
+      "1-05 B Mini-Test P11.mp3",
+      "1-06 Unit 2_ Test Tactic P13.mp3",
+      "1-07 Unit 2_ 3 Tactic Practice P14.mp3",
+      "1-08 Unit 2_ Understanding Natural English P14.mp3",
+      "1-09 Unit 2_ B Mini-Test P14.mp3",
+      "1-10 Unit 3_ 1 Language Building Follow Up P16.mp3",
+      "1-11 Unit 3_ 2 Test Tacit B P16.mp3",
+      "1-12 Unit 3_ 3 Tactic Practic P17.mp3",
+      "1-13 Unit 3_ Understanding Natural English P17.mp3",
+      "1-14 Unit 3_ B Mini-Test P17.mp3",
+      "1-15 Unit 4__ 2 Test Tactic B P21.mp3",
+      "1-16 Unit 4_ 3 Tactic Practice P21.mp3",
+      "1-17 Unit 4_ Understanding Natural English P21.mp3",
+      "1-18 Unit 4_ B Mini-Test P21.mp3",
+      "1-19 Unit 8_ 1 Language Building B P45.mp3",
+      "1-20 Unit 8_ 2 Test Tactic A P45.mp3",
+      "1-21 Unit 8_ 2 Test Tactic C P46.mp3",
+      "1-22 Unit 8_ 3 Tactic Practice P46.mp3",
+      "1-23 Unit 8_ Undestanding Natural English P47.mp3",
+      "1-24 Unit 8_ B Mini-Test P47.mp3",
+      "1-25 Unit 9_ 1 Language Building Follow Up P49.mp3",
+      "1-26 Unit 9_ 2 Test Tactic Follow Up P50.mp3",
+      "1-27 Unit 9_ 3 Tactic Practice P50.mp3",
+      "1-28 Unit 9_ Understanding Natural English P50.mp3",
+      "1-29 Unit 9_ B Mini-Test.mp3",
+      "1-30 Unit 10_ 1 Text Tactic D P53.mp3",
+      "1-31 Unit 10_ 2 Test Tactic B P53.mp3",
+      "1-32 Unit 10_ 2 Test Tactic C P54.mp3",
+      "1-33 Unit 10_ 3 Tactic Practice P54.mp3",
+      "1-34 Unit 10_ Understanding Natural English P54.mp3",
+      "1-35 Unit 10_ B Mini-Test P54.mp3",
+      "1-36 Unit 11_ 2 Test Tactic B P58.mp3",
+      "1-37 Unit 11_ 3 Tactic Practice P58.mp3",
+      "1-38 Unit 11_ Undestanding Natural English P58.mp3",
+      "1-39 Unit 11_ B Mini-Test P59.mp3",
+      "2-02 Unit 15_ 1 Language Building P84.mp3",
+      "2-03 Unit 15_ Text Tactic C P85.mp3",
+      "2-04 Unit 15_ 3 Tactic Practice P85.mp3",
+      "2-05 Unit 15_ Understanding Natural English P86.mp3",
+      "2-06 Unit 15_ B Mini-Test P86.mp3",
+      "2-07 Unit 16_ 1 Language Building C P88.mp3",
+      "2-08 Unit 16_ 2 Test Tactic B P89.mp3",
+      "2-09 Unit 16_ 3 Tactic Practice P89.mp3",
+      "2-10 Unit 16_ Understanding Natural English P89.mp3",
+      "2-11 Unit 16_ B Mini-Test P90.mp3",
+      "2-12 Unit 17_ 1 Language Building B P92.mp3",
+      "2-13 Unit 17_ 3 Tactic Practice P93.mp3",
+      "2-14 Unit 17_ Understanding Natural English P93.mp3",
+      "2-15 Unit 17_ B Mini-Test P93.mp3",
+      "2-16 Unit 18_ 1 Language Building B P95.mp3",
+      "2-17 Unit 18_ 2 Test Tactic C P96.mp3",
+      "2-18 Unit 18_ 3 Tactic Practice P96.mp3",
+      "2-19 Unit 18_ Understanding Natural English P96.mp3",
+      "2-20 Unit 18_ B Mini-Test P97.mp3",
+      "2-21 Unit 22_ 2 Test Tactic C P123.mp3",
+      "2-22 Unit 22_ 3 Tactic Practice P123.mp3",
+      "2-23 Unit 22_ Understanding Natural English P123.mp3",
+      "2-24 Unit 22_ B Mini-Test P124.mp3",
+      "2-25 Unit 23_ 2 Test Tactic Follow Up P128.mp3",
+      "2-26 Unit 23_ 3 Tactic Practice P128.mp3",
+      "2-27 Unit 23_ Understanding Natural English P128.mp3",
+      "2-28 Unit 23_ B Mini-Test P129.mp3",
+      "2-29 Unit 24_ 1 Language Building C P130.mp3",
+      "2-30 Unit 24_ 2 Test Tactic B P131.mp3",
+      "2-31 Unit 24_ 3 Tactic Practice P131.mp3",
+      "2-32 Unit 24_ Understanding Natural English P132.mp3",
+      "2-33 Unit 24_ B Mini-Test P132.mp3",
+      "2-34 Unit 25_ 2 Test Tactic B P135.mp3",
+      "2-35 Unit 25 3 Tactic Practice P135.mp3",
+      "2-36 Unit 25_ Understanding Natural English P136.mp3",
+      "2-37 Unit 25_ B Mini-Test P136.mp3"
+    ];
+    const pdfListening = [
+      "Tactics_for_TOEIC_Unit_1_SC.pdf",
+      "Tactics_for_TOEIC_Unit_2_SC.pdf",
+      "Tactics_for_TOEIC_Unit_3_SC.pdf",
+      "Tactics_for_TOEIC_Unit_4_SC.pdf",
+      "Tactics_for_TOEIC_Unit_8_SC.pdf",
+      "Tactics_for_TOEIC_Unit_9_SC.pdf",
+      "Tactics_for_TOEIC_Unit_10_SC.pdf",
+      "Tactics_for_TOEIC_Unit_11_SC.pdf",
+      "Tactics_for_TOEIC_Unit_15_SC.pdf",
+      "Tactics_for_TOEIC_Unit_16_SC.pdf",
+      "Tactics_for_TOEIC_Unit_17_SC.pdf",
+      "Tactics_for_TOEIC_Unit_18_SC.pdf",
+      "Tactics_for_TOEIC_Unit_22_SC.pdf",
+      "Tactics_for_TOEIC_Unit_23_SC.pdf",
+      "Tactics_for_TOEIC_Unit_24_SC.pdf",
+      "Tactics_for_TOEIC_Unit_25_SC.pdf"
+    ];
+    const answerKeys = [
+      "Answer Key Units 1-7_SC1.pdf",
+      "Answer Key Units 8–14_SC1.pdf",
+      "Answer Key Units 15–21_SC1.pdf",
+      "Answer Key Units 22–28_SC1.pdf",
+      "Answer Key Listening and Reading Practice Test 1_SC.pdf",
+      "Answer Key Listening and Reading Practice Test 2_SC.pdf",
+      "Kaplan_TOEIC_Test_1_Answers_SC.pdf",
+      "Kaplan_TOEIC_Test_2_Answers_SC.pdf",
+      "TOEIC_Listening_Review_Transcript.pdf",
+      "TOEIC_Review_Tests_Answer_Key.pdf",
+      "Updated TOEIC_3-3_Answers.pdf",
+      "Updated TOEIC_4-3_Answers_SC1.pdf",
+      "Updated TOEIC_4-7_Answers_SC.pdf",
+      "Updated TOEIC_5-3_Answers_SC1.pdf",
+      "Updated TOEIC_5-7_Answers_SC.pdf",
+      "Updated TOEIC_6-7_Answers_SC.pdf"
+    ];
+
+    const audioList = document.getElementById('audio-list');
+    const pdfList = document.getElementById('pdf-listening');
+    const keyList = document.getElementById('answer-keys');
+    const preview = document.getElementById('preview');
+    const searchInput = document.getElementById('search');
+
+    // Audio panel elemanları
+    const panel = document.getElementById('audio-panel');
+    const btnPlay = document.getElementById('btn-play');
+    const btnNext = document.getElementById('btn-next');
+    const btnPrev = document.getElementById('btn-prev');
+    const trackLabel = document.getElementById('current-track');
+    const audio = new Audio();
+    let currentIndex = -1;
+
+    function loadTrack(index) {
+      if (index < 0 || index >= audioFiles.length) return;
+      currentIndex = index;
+      audio.src = `Audio Files-20250516/${encodeURI(audioFiles[index])}`;
+      trackLabel.textContent = audioFiles[index];
+      panel.classList.remove('hidden');
+      audio.play();
+      btnPlay.textContent = '⏸️';
+    }
+    btnPlay.addEventListener('click', () => {
+      if (audio.paused) { audio.play(); btnPlay.textContent = '⏸️'; }
+      else { audio.pause(); btnPlay.textContent = '▶️'; }
+    });
+    btnNext.addEventListener('click', () => loadTrack(currentIndex + 1));
+    btnPrev.addEventListener('click', () => loadTrack(currentIndex - 1));
+    audio.addEventListener('ended', () => loadTrack(currentIndex + 1));
+
+    function makeAudioItem(name, idx) {
+      const li = document.createElement('li');
+      li.textContent = name;
+      li.addEventListener('click', () => loadTrack(idx));
+      return li;
+    }
+    function makePdfItem(name, path) {
+      const li = document.createElement('li');
+      li.textContent = name;
+      li.addEventListener('click', () => {
+        preview.src = `${path}/${encodeURI(name)}`;
+      });
+      return li;
+    }
+
+    audioFiles.forEach((f,i) => audioList.appendChild(makeAudioItem(f,i)));
+    pdfListening.forEach(f => pdfList.appendChild(makePdfItem(f,'Listening Exercises-20250516')));
+    answerKeys.forEach(f => keyList.appendChild(makePdfItem(f,'🔑 Answer - Keys-20250516')));
+
+    searchInput.addEventListener('input', e => {
+      const term = e.target.value.toLowerCase();
+      [...audioList.children].forEach(li => {
+        li.style.display = li.textContent.toLowerCase().includes(term) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>
+
