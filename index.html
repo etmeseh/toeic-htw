@@ -69,8 +69,12 @@
         <ul id="audio-list"></ul>
       </details>
       <details open>
-        <summary>Listenin Exercises (PDF)</summary>
+        <summary>Listening Exercises (PDF)</summary>
         <ul id="pdf-listening"></ul>
+      </details>
+       <details open>
+        <summary>Reading Exercises (PDF)</summary>
+        <ul id="pdf-reading"></ul>
       </details>
       <details open>
         <summary>🔑 Answer Keys (PDF)</summary>
@@ -185,6 +189,20 @@
       "Tactics_for_TOEIC_Unit_24_SC.pdf",
       "Tactics_for_TOEIC_Unit_25_SC.pdf"
     ];
+    const pdfReading = [
+      "Tactics_for_TOEIC_Unit_5_SC.pdf",
+      "Tactics_for_TOEIC_Unit_6_SC.pdf",
+      "Tactics_for_TOEIC_Unit_7_SC.pdf",
+      "Tactics_for_TOEIC_Unit_12_SC.pdf",
+      "Tactics_for_TOEIC_Unit_13_SC.pdf",
+      "Tactics_for_TOEIC_Unit_14_SC.pdf",
+      "Tactics_for_TOEIC_Unit_19_SC.pdf",
+      "Tactics_for_TOEIC_Unit_20_SC.pdf",
+      "Tactics_for_TOEIC_Unit_21_SC.pdf",
+      "Tactics_for_TOEIC_Unit_26_SC.pdf",
+      "Tactics_for_TOEIC_Unit_27_SC.pdf",
+      "Tactics_for_TOEIC_Unit_28_SC.pdf"
+    ];
     const answerKeys = [
       "Answer Key Units 1-7_SC1.pdf",
       "Answer Key Units 8–14_SC1.pdf",
@@ -206,6 +224,7 @@
 
     const audioList = document.getElementById('audio-list');
     const pdfList = document.getElementById('pdf-listening');
+    const readingList = document.getElementById('pdf-reading');
     const keyList = document.getElementById('answer-keys');
     const preview = document.getElementById('preview');
     const searchInput = document.getElementById('search');
@@ -253,6 +272,7 @@
 
     audioFiles.forEach((f,i) => audioList.appendChild(makeAudioItem(f,i)));
     pdfListening.forEach(f => pdfList.appendChild(makePdfItem(f,'Listening Exercises-20250516')));
+    pdfReading.forEach(f => readingList.appendChild(makePdfItem(f, 'Reading Exercises-20250521')));
     answerKeys.forEach(f => keyList.appendChild(makePdfItem(f,'🔑 Answer - Keys-20250516')));
 
     searchInput.addEventListener('input', e => {

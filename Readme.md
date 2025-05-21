@@ -11,12 +11,14 @@ This guide provides a step-by-step walkthrough for setting up a simple web page 
 
    * `Audio Files-20250516` (audio files)
    * `Listening Exercises-20250516` (listening exercise PDFs)
+   * `Reading Exercises-20250521` (reading exercise PDFs)
    * `🔑 Answer - Keys-20250516` (answer key PDFs)
 3. Extract all ZIP archives into a single directory. You should end up with:
 
    ```
    Audio Files-20250516/
    Listening Exercises-20250516/
+   Reading Exercises-20250521/
    🔑 Answer - Keys-20250516/
    ```
 
@@ -30,10 +32,11 @@ This guide provides a step-by-step walkthrough for setting up a simple web page 
    ├── index.html
    ├── Audio Files-20250516/
    ├── Listening Exercises-20250516/
+   ├── Reading Exercises-20250521/
    └── 🔑 Answer - Keys-20250516/
    ```
 
-## 3. Opening the Page Locally or in a Browser
+## 3. Opening the Page Locally or in a Browser (easy way)
 
 ### Option A: Open Directly
 
